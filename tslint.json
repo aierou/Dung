@@ -1,0 +1,21 @@
+{
+    "extends": "tslint:recommended",
+    "rules": {
+        "max-line-length": {
+            "options": [120]
+        },
+        "member-ordering": [true, {"order": "fields-first"}],
+        "object-literal-sort-keys": false,
+        "forin": false,
+        "new-parens": true,
+        "variable-name": false,
+        "max-classes-per-file": false,
+        "only-arrow-functions": false,
+        "no-arg": true,
+        "no-bitwise": true,
+        "no-conditional-assignment": true,
+        "no-consecutive-blank-lines": false,
+        "no-console": false,
+        "indent": [true, "spaces", 4]
+    }
+}

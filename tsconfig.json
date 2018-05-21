@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "typeRoots": [
+            "./typings"
+        ],
+        "outDir": "./public/scripts/",
+        "sourceMap": true,
+        //"noImplicitAny": true,
+        "target": "es6",
+        "jsx": "react",
+        "allowJs": true
+    }
+}
