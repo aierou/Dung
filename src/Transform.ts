@@ -1,7 +1,13 @@
+import Point from "./Point";
+
 export class Transform {
     public x: number;
     public y: number;
     public rot: number;
+
+    public get position(): Point {
+        return new Point(this.x, this.y);
+    }
 
     constructor(x: number, y: number) {
         this.x = x;

@@ -1,3 +1,4 @@
+import Chunk from "./Chunk";
 import { Entity } from "./Entity";
 
 export class EntityManager {
@@ -26,5 +27,22 @@ export class EntityManager {
 
     public addEntity(entity: Entity) {
         this.entities.push(entity);
+    }
+
+    public addEntities(entities: Entity[]) {
+        this.entities = this.entities.concat(entities);
+    }
+
+    public unloadAndSaveToChunk(chunk: Chunk) {
+        const unloadedEntities = [];
+        this.entities = this.entities.filter((entity) => {
+            const rect = chunk.getBoundingRectangle();
+            if (rect.containsPoint(entity.transform.position)) {
+                unloadedEntities.push(entity);
+                return false;
+            }
+            return true;
+        });
+        return unloadedEntities;
     }
 }

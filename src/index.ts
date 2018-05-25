@@ -2,7 +2,7 @@ import { Game } from "./Game";
 import { InputController } from "./InputController";
 import { World } from "./World";
 
-const world: World = new World();
+let world: World;
 let game: Game;
 let canvas: HTMLCanvasElement;
 let ctx: CanvasRenderingContext2D;
@@ -12,16 +12,23 @@ const inputController: InputController = InputController.Instance;
 window.onload = function() {
     canvas = document.getElementById("canvas") as HTMLCanvasElement;
     ctx = enhanceContext(canvas.getContext("2d"));
-    canvas.width = 720;
-    canvas.height = 480;
+    window.onresize = onresize;
 
     inputController.init(canvas, ctx);
     game = new Game(ctx);
+    world = new World(game);
     game.addWorld(world);
 
     (window as any).game = game;
 
+    onresize();
     game.init();
+};
+
+const onresize = function() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    if (game) { game.resize(canvas.width, canvas.height); }
 };
 
 
@@ -40,6 +47,7 @@ const createMatrix = function() {
 const enhanceContext = function(context) {
     const m = createMatrix();
     context._matrix = m;
+    context._scale = 1;
 
     // the stack of saved matrices
     context._savedMatrices = [m];

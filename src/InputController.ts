@@ -2,6 +2,9 @@ export class InputController {
     private static _instance: InputController;
     private _mouseX: number = 0;
     private _mouseY: number = 0;
+    private _mouseDown: boolean = false;
+    private _keys: any = {};
+
     private subscribers: any = {};
     private ctx: CanvasRenderingContext2D;
 
@@ -9,14 +12,25 @@ export class InputController {
         const ret: any = transformPoint({x: this._mouseX, y: this._mouseY}, (this.ctx as any).getTransform().inverse());
         ret.clientX = this._mouseX;
         ret.clientY = this._mouseY;
+        ret.isDown = this._mouseDown;
         return ret;
     }
 
+
     private constructor() {}
+
+    public getKey(key: string): boolean {
+        return !!this._keys[key];
+    }
 
     public init(target: HTMLElement, ctx: CanvasRenderingContext2D) {
         target.addEventListener("mousemove", this.mousemove);
         target.addEventListener("wheel", this.wheel);
+        target.addEventListener("mousedown", this.mousedown);
+        target.addEventListener("mouseup", this.mouseup);
+        document.addEventListener("keydown", this.keydown);
+        document.addEventListener("keyup", this.keyup);
+        // target.addEventListener("mouseleave", this.mouseup);
         this.ctx = ctx;
     }
 
@@ -35,8 +49,27 @@ export class InputController {
         }
     }
 
+    private keydown = (e: KeyboardEvent) => {
+        this._keys[e.key] = true;
+    }
+
+    private keyup = (e: KeyboardEvent) => {
+        this._keys[e.key] = false;
+    }
+
+    private mousedown = (e: MouseEvent) => {
+        this._mouseDown = true;
+    }
+
+    private mouseup = (e: MouseEvent) => {
+        this._mouseDown = false;
+    }
+
     private mousemove = (e: MouseEvent) => {
         this.getMousePosition(e);
+        for (const callback of this.subscribers.mousemove) {
+            callback(e);
+        }
     }
 
     private getMousePosition(e) {

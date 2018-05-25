@@ -5,33 +5,23 @@ import { Transform } from "./Transform";
 export class TestSquare2 extends Entity {
     private frameCount: number = 0;
     private inputController: InputController = InputController.Instance;
-    private img;
-    private imgloaded: boolean = false;
 
     public constructor(x, y) {
         super(x, y);
-        this.img = new Image();
-        this.img.onload = () => {
-            console.log("loaded");
-            this.imgloaded = true;
-        };
-        this.img.src = "tilesets/tileset1.png";
     }
 
     public update() {
         this.frameCount++;
-        this.transform.x = this.inputController.mouse.x;
-        this.transform.y = this.inputController.mouse.y;
+        this.transform.x = Math.floor(this.inputController.mouse.x / 128) * 128;
+        this.transform.y = Math.floor(this.inputController.mouse.y / 128) * 128;
         // this.transform.x = 100;
         // this.transform.y = 100;
     }
 
     public render(ctx: CanvasRenderingContext2D, transform: Transform) {
+        // this.transform.x = this.inputController.mouse.x;
+        // this.transform.y = this.inputController.mouse.y;
         ctx.fillStyle = "#ff0000";
-        if (!this.imgloaded) {
-            ctx.fillRect(transform.x, transform.y, 50, 50);
-        } else {
-            ctx.drawImage(this.img, transform.x, transform.y);
-        }
+        ctx.fillRect(this.transform.x, this.transform.y, 128, 128);
     }
 }

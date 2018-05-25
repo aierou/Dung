@@ -1,3 +1,7 @@
+import Camera from "./Camera";
+import Rectangle from "./Rectangle";
+import UILabel from "./UILabel";
+import UIManager from "./UIManager";
 import { World } from "./World";
 
 export class Game {
@@ -9,10 +13,23 @@ export class Game {
     private lastTick: number;
     private worlds: World[];
     private ctx: CanvasRenderingContext2D;
+    private uiManager: UIManager;
+    private fpsLabel: UILabel;
+    private camera: Camera;
+    private bounds: Rectangle;
 
     constructor(ctx: CanvasRenderingContext2D) {
         this.ctx = ctx;
         this.worlds = [];
+
+        // UI Stuff
+        this.uiManager = new UIManager();
+        this.fpsLabel = new UILabel(this.fps);
+        this.fpsLabel.outline = true;
+        this.uiManager.addUIElement(this.fpsLabel);
+
+
+        this.camera = new Camera();
     }
 
     public init() {
@@ -22,6 +39,15 @@ export class Game {
         this.maxTicks = 20; // Maximum queued ticks before disposal
 
         this.main(performance.now()); // Start the cycle
+    }
+
+    public resize(width, height) {
+        const scale = transformPoint({x: width, y: height}, (this.ctx as any).getTransform().inverse());
+        this.camera.resize(scale.x, scale.y);
+    }
+
+    public getActiveCamera(): Camera {
+        return this.camera;
     }
 
     public addWorld(world: World) {
@@ -37,21 +63,25 @@ export class Game {
         const inverseMatrix = (this.ctx as any).getTransform().inverse();
         const position = transformPoint({x: 0, y: 0}, inverseMatrix);
         const scale = transformPoint({x: this.ctx.canvas.width, y: this.ctx.canvas.height}, inverseMatrix);
-        this.ctx.fillRect(position.x, position.y, scale.x - position.x, scale.y - position.y);
+        const bounds = new Rectangle(position.x, position.y, scale.x - position.x, scale.y - position.y);
+        this.ctx.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
         this.ctx.restore();
+
+        this.fps = (1000 / (tFrame - this.lastRender)).toPrecision(5);
+
+        this.camera.resize(bounds.width, bounds.height);
+        this.camera.render(this.ctx);
 
          // Not sure why I'm supporting multiple worlds if they all have the same context
         this.worlds.forEach((world) => {
             world.render(this.ctx, delta);
         });
 
-        // Debug: display fps
-        this.ctx.save();
-        this.fps = (1000 / (tFrame - this.lastRender)).toPrecision(5);
-        this.ctx.font = "20px sans-serif";
-        this.ctx.fillStyle = "#eaeaea";
-        this.ctx.fillText(this.fps + " fps", 20, 20);
-        this.ctx.restore();
+        this.fpsLabel.text = this.fps + " fps";
+        this.uiManager.render(this.ctx);
+
+        // this.ctx.fillStyle = "#fffffffa";
+        // this.ctx.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
     }
 
     private update(timestamp) {

@@ -1,3 +1,4 @@
+import DragInfo from "./DragInfo";
 import { Entity } from "./Entity";
 import { InputController } from "./InputController";
 
@@ -5,17 +6,51 @@ const SCALING_RATIO = 1.15;
 export default class Camera extends Entity {
     private zoom: number = 1;
     private inputController: InputController = InputController.Instance;
+    private dragInfo: DragInfo = new DragInfo();
+    private MINIMUM_SCALE: number = .10; // Performance constrained
+    private MAXIMUM_SCALE: number = 20; // Arbitrary
 
     constructor() {
-        super(0, 0);
+        super();
         this.inputController.subscribe("wheel", (e: WheelEvent) => {
-            this.zoomToPoint(this.zoom * (e.deltaY > 0 ? (1 / SCALING_RATIO) : SCALING_RATIO),
-                this.inputController.mouse.clientX,
-                this.inputController.mouse.clientY);
+            if (this.inputController.getKey("Control")) {
+                this.zoomToPoint(this.zoom * (e.deltaY > 0 ? (1 / SCALING_RATIO) : SCALING_RATIO),
+                    this.inputController.mouse.clientX,
+                    this.inputController.mouse.clientY);
+                e.preventDefault();
+            }
+        });
+
+        this.inputController.subscribe("mousemove", (e: MouseEvent) => {
+            if (this.dragInfo.dragging && this.inputController.getKey("Control")) {
+                const mouse = this.inputController.mouse;
+
+                let transform = createMatrix();
+                transform = transform.scaleNonUniform(this.zoom, this.zoom)
+                    .translate(this.transform.x, this.transform.y);
+
+                const pos = {
+                    x: this.dragInfo.dragPosition.x - mouse.x,
+                    y: this.dragInfo.dragPosition.y - mouse.y,
+                };
+
+                this.transform.x = this.dragInfo.objectPosition.x + pos.x;
+                this.transform.y = this.dragInfo.objectPosition.y + pos.y;
+            }
         });
     }
 
+    public resize(width: number, height: number) {
+        this.width = width;
+        this.height = height;
+    }
+
+    public getScale() {
+        return this.zoom;
+    }
+
     public zoomToPoint(zoomLevel: number, x: number, y: number) {
+        zoomLevel = Math.min(Math.max(zoomLevel, this.MINIMUM_SCALE), this.MAXIMUM_SCALE);
         // Point before zoom
         let transform = createMatrix();
         transform = transform.scaleNonUniform(this.zoom, this.zoom).translate(this.transform.x, this.transform.y);
@@ -31,6 +66,19 @@ export default class Camera extends Entity {
         this.zoom = zoomLevel;
     }
 
+    public performDrag() {
+        const mouse = this.inputController.mouse;
+        if (mouse.isDown && this.inputController.getKey("Control")) {
+            if (!this.dragInfo.dragging) {
+                this.dragInfo.startDrag(this.transform, mouse.x, mouse.y);
+            }
+        } else {
+            if (this.dragInfo.dragging) {
+                this.dragInfo.stopDrag();
+            }
+        }
+    }
+
     public shake() {
         //
     }
@@ -38,7 +86,9 @@ export default class Camera extends Entity {
     public render(ctx) {
         ctx.resetTransform();
         ctx.scale(this.zoom, this.zoom);
+        ctx._scale = this.zoom;
         ctx.translate(-this.transform.x, -this.transform.y);
+        this.performDrag();
     }
 }
 
