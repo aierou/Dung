@@ -19,7 +19,7 @@ export default class World {
     private loadedChunks: Chunk[] = new Array();
     private chunks: Map<string, Chunk>;
     // Expect these to come in as metadata
-    private chunkSize: number = 32;
+    private chunkSize: number = 16;
     private tileSize: number = 128;
     private inputController: InputController = InputController.Instance;
 
@@ -75,7 +75,7 @@ export default class World {
             ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
             const p = new Point(rect.x / (this.chunkSize * this.tileSize), rect.y / (this.chunkSize * this.tileSize));
             ctx.fillStyle = "#ffffffaa";
-            ctx.font = "bold 1000px sans-serif";
+            ctx.font = "bold 500px sans-serif";
             ctx.fillText(p.x + ", " + p.y, rect.x + (rect.width / 3), rect.y + (rect.height / 2));
         }
 
