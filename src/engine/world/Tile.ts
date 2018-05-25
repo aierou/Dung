@@ -1,6 +1,6 @@
-import Sprite from "./Sprite";
-import SpriteManager from "./SpriteManager";
-import { Transform } from "./Transform";
+import Sprite from "../common/Sprite";
+import Transform from "../common/Transform";
+import SpriteManager from "../SpriteManager";
 
 export default class Tile {
     private _id: number;

@@ -1,4 +1,4 @@
-export class InputController {
+export default class InputController {
     private static _instance: InputController;
     private _mouseX: number = 0;
     private _mouseY: number = 0;

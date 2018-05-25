@@ -1,6 +1,6 @@
 import Point from "./Point";
 
-export class Transform {
+export default class Transform {
     public x: number;
     public y: number;
     public rot: number;

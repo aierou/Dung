@@ -1,18 +1,18 @@
-import Camera from "./Camera";
+import Camera from "../Camera";
+import Point from "../common/Point";
+import Rectangle from "../common/Rectangle";
+import Transform from "../common/Transform";
+import Game from "../Game";
+import InputController from "../InputController";
+import UILabel from "../ui/UILabel";
+import UIManager from "../UIManager";
 import Chunk from "./Chunk";
-import { Entity } from "./Entity";
-import { EntityManager } from "./EntityManager";
-import { Game } from "./Game";
-import { InputController } from "./InputController";
-import Point from "./Point";
-import Rectangle from "./Rectangle";
-import { TestSquare } from "./TestSquare";
-import { TestSquare2 } from "./TestSquare2";
-import { Transform } from "./Transform";
-import UILabel from "./UILabel";
-import UIManager from "./UIManager";
+import Entity from "./entity/Entity";
+import TestSquare from "./entity/TestSquare";
+import TestSquare2 from "./entity/TestSquare2";
+import EntityManager from "./EntityManager";
 
-export class World {
+export default class World {
     public entityManager: EntityManager;
     public camera: Camera;
     private game: Game;
@@ -38,32 +38,6 @@ export class World {
         this.chunks.set(chunk.position.toString(), chunk);
     }
 
-    // Welp. I spent several hours figuring this out, but it's crap. I'm just going to scale
-    // Tiles based on the camera zoom. That seems to do the trick.
-    // public drawTileMap() {
-    //     const tileCanvas = document.createElement("canvas");
-    //     const camera = this.game.getActiveCamera();
-    //     const cameraRect = camera.getBoundingRectangle();
-    //     tileCanvas.width = 1920;
-    //     tileCanvas.height = 1080;
-    //     const tileCanvasCtx = tileCanvas.getContext("2d");
-    //     const scale = camera.getScale();
-
-    //     this.tileMapScale = scale;
-    //     this.tileMapOffset = camera.transform.position;
-
-    //     tileCanvasCtx.scale(scale, scale);
-    //     tileCanvasCtx.translate(-this.tileMapOffset.x, -this.tileMapOffset.y);
-    //     for (const chunk of this.loadedChunks) {
-    //         if (!chunk.tiles.isEmpty()) {
-    //             chunk.render(tileCanvasCtx);
-    //         }
-    //     }
-    //     const image = new Image();
-    //     image.src = tileCanvas.toDataURL();
-    //     this.tileMap = image;
-    // }
-
     public update(timestamp: number) {
         this.entityManager.update();
 
@@ -88,14 +62,6 @@ export class World {
     }
 
     public render(ctx: CanvasRenderingContext2D, delta: number) {
-
-        // Render tile map
-        // ctx.save();
-        // ctx.translate(this.tileMapOffset.x, this.tileMapOffset.y);
-        // ctx.scale(1 / this.tileMapScale, 1 / this.tileMapScale);
-        // ctx.drawImage(this.tileMap, 0, 0);
-        // ctx.restore();
-
         for (const chunk of this.loadedChunks) {
             if (!chunk.tiles.isEmpty()) {
                 chunk.render(ctx);
@@ -109,8 +75,8 @@ export class World {
             ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
             const p = new Point(rect.x / (this.chunkSize * this.tileSize), rect.y / (this.chunkSize * this.tileSize));
             ctx.fillStyle = "#ffffffaa";
-            ctx.font = "bold 50px sans-serif";
-            ctx.fillText(p.x + ", " + p.y, rect.x + 10, rect.y + 40);
+            ctx.font = "bold 1000px sans-serif";
+            ctx.fillText(p.x + ", " + p.y, rect.x + (rect.width / 3), rect.y + (rect.height / 2));
         }
 
         // Render entities
@@ -138,10 +104,13 @@ export class World {
     }
 
     private updateChunks() {
+
+        // Grid of visible chunks
         const rect = this.game.getActiveCamera().getBoundingRectangle()
             .scaleToGrid(this.chunkSize * this.tileSize)
             .expand(1).translate(1, 1);
 
+        // List of chunks in grid
         const validChunks: Chunk[] = new Array();
         const iterator = rect.iterateGrid();
         for (const point of iterator) {
@@ -161,25 +130,17 @@ export class World {
             return this.loadedChunks.indexOf(n) === -1;
         });
 
-
-
         // unload
         for (const chunk of chunksToUnload) {
             this.unloadChunk(chunk, false);
         }
+        if (chunksToUnload.length > 0) {console.log("Unloading " + chunksToUnload.length + " chunks"); }
 
         // load
         for (const chunk of chunksToLoad) {
             this.loadChunk(chunk, false);
         }
-
-        // console.log(chunksToLoad.length + " " + chunksToUnload.length + " " + this.loadedChunks.length);
-
-        // for(x = this.camera.transform.x) { }
-        // Check if chunk is in visible area
-        // If not, unload it (if it is loaded)
-        // If it is, load it (if it isn't loaded)
-        // Might need to be able to get chunks by coordinates or something
+        if (chunksToLoad.length > 0) {console.log("Loading " + chunksToLoad.length + " chunks"); }
     }
 }
 

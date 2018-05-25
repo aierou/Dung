@@ -1,4 +1,4 @@
-import { Transform } from "./Transform";
+import Transform from "../common/Transform";
 import UIElement from "./UIElement";
 
 export default class UILabel extends UIElement {

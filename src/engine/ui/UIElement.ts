@@ -1,4 +1,4 @@
-import Drawable from "./Drawable";
+import Drawable from "../common/Drawable";
 
 export default class UIElement extends Drawable {
     constructor(x: number, y: number) {

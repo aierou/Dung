@@ -1,9 +1,9 @@
-import Drawable from "./Drawable";
-import Rectangle from "./Rectangle";
-import Sprite from "./Sprite";
-import { Transform } from "./Transform";
+import Drawable from "../../common/Drawable";
+import Rectangle from "../../common/Rectangle";
+import Sprite from "../../common/Sprite";
+import Transform from "../../common/Transform";
 
-export class Entity extends Drawable {
+export default class Entity extends Drawable {
     public width: number;
     public height: number;
     private lastTransform: Transform;

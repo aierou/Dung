@@ -1,6 +1,6 @@
-import SpriteManager from "./SpriteManager";
+import Transform from "../common/Transform";
+import SpriteManager from "../SpriteManager";
 import Tile from "./Tile";
-import { Transform } from "./Transform";
 
 export default class TileManager {
     private tileset: string;
@@ -83,6 +83,13 @@ export default class TileManager {
 
     public render(ctx: CanvasRenderingContext2D, x, y) {
         const size = this.chunkSize * this.tileSize;
+        const a = performance.now();
         ctx.drawImage(this.tileCanvas, x, y, size, size);
+        const duration = performance.now() - a;
+        if (duration > 100) {
+            console.log("tile render took " + (duration) + " ms");
+            console.log(x + " " + y + " " + size);
+            console.log(this);
+        }
     }
 }

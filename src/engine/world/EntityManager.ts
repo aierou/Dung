@@ -1,7 +1,7 @@
 import Chunk from "./Chunk";
-import { Entity } from "./Entity";
+import Entity from "./entity/Entity";
 
-export class EntityManager {
+export default class EntityManager {
     public entities: Entity[];
 
     constructor() {

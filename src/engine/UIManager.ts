@@ -1,5 +1,4 @@
-import UIElement from "./UIElement";
-import UILabel from "./UILabel";
+import UIElement from "./ui/UIElement";
 
 export default class UIManager {
     private elements: UIElement[] = new Array();

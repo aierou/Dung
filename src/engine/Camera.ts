@@ -1,17 +1,20 @@
-import DragInfo from "./DragInfo";
-import { Entity } from "./Entity";
-import { InputController } from "./InputController";
+import DragInfo from "./common/DragInfo";
+import Rectangle from "./common/Rectangle";
+import Transform from "./common/Transform";
+import InputController from "./InputController";
 
 const SCALING_RATIO = 1.15;
-export default class Camera extends Entity {
-    private zoom: number = 1;
+export default class Camera {
+    private zoom: number = 0.5;
     private inputController: InputController = InputController.Instance;
     private dragInfo: DragInfo = new DragInfo();
-    private MINIMUM_SCALE: number = .10; // Performance constrained
+    private MINIMUM_SCALE: number = 0.1; // Performance constrained
     private MAXIMUM_SCALE: number = 20; // Arbitrary
+    private transform: Transform = new Transform(0, 0);
+    private width: number;
+    private height: number;
 
     constructor() {
-        super();
         this.inputController.subscribe("wheel", (e: WheelEvent) => {
             if (this.inputController.getKey("Control")) {
                 this.zoomToPoint(this.zoom * (e.deltaY > 0 ? (1 / SCALING_RATIO) : SCALING_RATIO),
@@ -47,6 +50,10 @@ export default class Camera extends Entity {
 
     public getScale() {
         return this.zoom;
+    }
+
+    public getBoundingRectangle() {
+        return new Rectangle(this.transform.x, this.transform.y, this.width, this.height);
     }
 
     public zoomToPoint(zoomLevel: number, x: number, y: number) {

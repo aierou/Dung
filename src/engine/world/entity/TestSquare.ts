@@ -1,8 +1,8 @@
-import { Entity } from "./Entity";
-import { InputController } from "./InputController";
-import { Transform } from "./Transform";
+import Transform from "../../common/Transform";
+import InputController from "../../InputController";
+import Entity from "./Entity";
 
-export class TestSquare extends Entity {
+export default class TestSquare extends Entity {
     private frameCount: number = 0;
     private inputController: InputController = InputController.Instance;
 

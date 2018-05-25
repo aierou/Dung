@@ -1,4 +1,4 @@
-import Sprite from "./Sprite";
+import Sprite from "./common/Sprite";
 
 export default class SpriteManager {
     // Going to have a .getSprite(id) method which returns a Sprite, as well as a .setSpritesheet

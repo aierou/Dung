@@ -1,10 +1,10 @@
 import Camera from "./Camera";
-import Rectangle from "./Rectangle";
-import UILabel from "./UILabel";
+import Rectangle from "./common/Rectangle";
+import UILabel from "./ui/UILabel";
 import UIManager from "./UIManager";
-import { World } from "./World";
+import World from "./world/World";
 
-export class Game {
+export default class Game {
     public tickLength: number;
     public stopMain;
     public maxTicks: number;
@@ -27,7 +27,6 @@ export class Game {
         this.fpsLabel = new UILabel(this.fps);
         this.fpsLabel.outline = true;
         this.uiManager.addUIElement(this.fpsLabel);
-
 
         this.camera = new Camera();
     }

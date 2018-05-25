@@ -1,6 +1,6 @@
-import { Game } from "./Game";
-import { InputController } from "./InputController";
-import { World } from "./World";
+import Game from "./engine/Game";
+import InputController from "./engine/InputController";
+import World from "./engine/world/World"; // I don't know if this should be created from the index object.
 
 let world: World;
 let game: Game;

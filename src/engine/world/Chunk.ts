@@ -1,9 +1,9 @@
-import { Entity } from "./Entity";
-import Point from "./Point";
-import Rectangle from "./Rectangle";
+import Point from "../common/Point";
+import Rectangle from "../common/Rectangle";
+import Transform from "../common/Transform";
+import Entity from "./entity/Entity";
 import Tile from "./Tile";
 import TileManager from "./TileManager";
-import { Transform } from "./Transform";
 
 export default class Chunk {
     private entities: Entity[];
