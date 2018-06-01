@@ -6,6 +6,4 @@ export default class Drawable {
     constructor(x: number = 0, y: number = 0) {
         this.transform = new Transform(x, y);
     }
-
-    public render(ctx: CanvasRenderingContext2D) { /* Override */ }
 }

@@ -1,5 +1,8 @@
 import Transform from "../common/Transform";
+import WorldEditorInfo from "../common/WorldEditorInfo";
+import Constants from "../Constants";
 import SpriteManager from "../SpriteManager";
+import TilesetManager from "../TilesetManager";
 import Tile from "./Tile";
 
 export default class TileManager {
@@ -17,7 +20,7 @@ export default class TileManager {
     // work so well.
     constructor(tileset: string, tileSize: number, chunkSize: number) {
         this.tileset = tileset;
-        this.spritesheet = new SpriteManager("tilesets/" + tileset + ".png", tileSize, tileSize);
+        this.spritesheet = TilesetManager.getTileset(tileset, tileSize);
         this.tileCanvas = document.createElement("canvas");
         this.tileCanvas.width = chunkSize * tileSize;
         this.tileCanvas.height = chunkSize * tileSize;
@@ -25,16 +28,17 @@ export default class TileManager {
         this.tileSize = tileSize;
         this.scaledTileSize = tileSize;
         this.tileCanvasCtx = this.tileCanvas.getContext("2d");
+        this.tileCanvasCtx.imageSmoothingEnabled = false;
         this.load().then(() => {
-            // DEBUG FUN TIMES
+            /*// DEBUG FUN TIMES
             for (let x = 0; x < chunkSize; x++) {
                 for (let y = 0; y < chunkSize; y++) {
-                    const tile = new Tile(1, x, y);
+                    const tile = new Tile(0, x, y);
                     tile.applySprite(this.spritesheet, new Transform(x * this.scaledTileSize, y * this.scaledTileSize));
                     this.tiles.push(tile);
                 }
             }
-            // YEAH
+            // YEAH*/
             this.tiles.forEach((tile) => {
                 tile.sprite.render(this.tileCanvasCtx, this.scaledTileSize, this.scaledTileSize);
             });
@@ -47,12 +51,12 @@ export default class TileManager {
             if (!tile) {
                 tile = new Tile(id, x, y);
                 this.tiles.push(tile);
+            } else if (tile.id === id) {
+                return;
             }
-            if (tile.id !== id) {
-                tile.id = id;
-                tile.applySprite(this.spritesheet, new Transform(x * this.scaledTileSize, y * this.scaledTileSize));
-                tile.sprite.render(this.tileCanvasCtx, this.scaledTileSize, this.scaledTileSize);
-            }
+            tile.id = id;
+            tile.applySprite(this.spritesheet, new Transform(x * this.scaledTileSize, y * this.scaledTileSize));
+            tile.sprite.render(this.tileCanvasCtx, this.scaledTileSize, this.scaledTileSize);
         }
     }
 
@@ -72,7 +76,7 @@ export default class TileManager {
         this.scaledTileSize = size;
         this.tileCanvas.width = this.chunkSize * size;
         this.tileCanvas.height = this.chunkSize * size;
-        // this.tileCanvasCtx.fillStyle = ""
+        this.tileCanvasCtx.fillStyle = Constants.backgroundColor;
         this.tileCanvasCtx.fillRect(0, 0, this.chunkSize * size, this.chunkSize * size);
         this.tiles.forEach((tile) => {
             tile.sprite.transform.x = tile.x * size;
@@ -83,13 +87,6 @@ export default class TileManager {
 
     public render(ctx: CanvasRenderingContext2D, x, y) {
         const size = this.chunkSize * this.tileSize;
-        const a = performance.now();
         ctx.drawImage(this.tileCanvas, x, y, size, size);
-        const duration = performance.now() - a;
-        if (duration > 100) {
-            console.log("tile render took " + (duration) + " ms");
-            console.log(x + " " + y + " " + size);
-            console.log(this);
-        }
     }
 }

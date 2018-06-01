@@ -8,6 +8,7 @@ export default class SpriteManager {
     private spriteWidth: number;
     private spriteHeight: number;
     private sprites: ImageBitmap[] = new Array();
+    private loaded: boolean = false;
 
     public constructor(spritesheetFileName: string, spriteWidth: number, spriteHeight: number) {
         this.spritesheetFileName = spritesheetFileName;
@@ -16,17 +17,34 @@ export default class SpriteManager {
     }
 
     public load(): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.spritesheet = new Image();
-            this.spritesheet.onload = () => {
-                return resolve(this.createSprites());
-            };
-            this.spritesheet.src = this.spritesheetFileName;
-        });
+        if (this.loaded) {
+            return Promise.resolve();
+        } else {
+            return new Promise((resolve, reject) => {
+                this.spritesheet = new Image();
+                this.spritesheet.onload = () => {
+                    this.loaded = true;
+                    return resolve(this.createSprites());
+                };
+                this.spritesheet.src = this.spritesheetFileName;
+            });
+        }
+    }
+
+    public *iterateSpriteImages(): IterableIterator<ImageBitmap> {
+        for (const sprite of this.sprites) {
+            yield sprite;
+        }
     }
 
     public getSprite(id: number): Sprite {
-        return new Sprite(this.sprites[id]);
+        if (this.sprites[id]) {
+            return new Sprite(this.sprites[id]);
+        }
+    }
+
+    public getNumberOfSprites(): number {
+        return this.sprites.length;
     }
 
     private createSprites(): Promise<any> {

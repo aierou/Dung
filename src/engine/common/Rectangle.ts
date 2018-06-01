@@ -7,11 +7,11 @@ export default class Rectangle {
     public height: number;
 
     public get bottom(): number {
-        return this.y + this.height;
+        return this.height === Infinity ? Infinity : this.y + this.height;
     }
 
     public get right(): number {
-        return this.x + this.width;
+        return this.width === Infinity ? Infinity : this.x + this.width;
     }
 
     constructor(x: number, y: number, width: number, height: number) {

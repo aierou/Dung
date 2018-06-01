@@ -1,3 +1,5 @@
+import UIManager from "./UIManager";
+
 export default class InputController {
     private static _instance: InputController;
     private _mouseX: number = 0;
@@ -6,6 +8,7 @@ export default class InputController {
     private _keys: any = {};
 
     private subscribers: any = {};
+    private uiManager: UIManager;
     private ctx: CanvasRenderingContext2D;
 
     get mouse(): any {
@@ -42,11 +45,14 @@ export default class InputController {
         this.subscribers[event].push(callback);
     }
 
+    public registerUIManager(uiManager: UIManager) {
+        this.uiManager = uiManager;
+    }
+
     private wheel = (e: WheelEvent) => {
         this.getMousePosition(e);
-        for (const callback of this.subscribers.wheel) {
-            callback(e);
-        }
+        this.uiManager.resolveWheelEvent(e, this.mouse);
+        e.preventDefault();
     }
 
     private keydown = (e: KeyboardEvent) => {
@@ -59,17 +65,17 @@ export default class InputController {
 
     private mousedown = (e: MouseEvent) => {
         this._mouseDown = true;
+        this.uiManager.resolveClickEvent(this.mouse);
     }
 
     private mouseup = (e: MouseEvent) => {
         this._mouseDown = false;
+        this.uiManager.resolveClickEvent(this.mouse);
     }
 
     private mousemove = (e: MouseEvent) => {
         this.getMousePosition(e);
-        for (const callback of this.subscribers.mousemove) {
-            callback(e);
-        }
+        this.uiManager.resolveMouseEvent(this.mouse);
     }
 
     private getMousePosition(e) {

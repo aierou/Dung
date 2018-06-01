@@ -3,8 +3,8 @@ import Rectangle from "./common/Rectangle";
 import Transform from "./common/Transform";
 import InputController from "./InputController";
 
-const SCALING_RATIO = 1.15;
 export default class Camera {
+    public SCALING_RATIO: number = 1.15;
     private zoom: number = 0.5;
     private inputController: InputController = InputController.Instance;
     private dragInfo: DragInfo = new DragInfo();
@@ -14,33 +14,30 @@ export default class Camera {
     private width: number;
     private height: number;
 
-    constructor() {
-        this.inputController.subscribe("wheel", (e: WheelEvent) => {
-            if (this.inputController.getKey("Control")) {
-                this.zoomToPoint(this.zoom * (e.deltaY > 0 ? (1 / SCALING_RATIO) : SCALING_RATIO),
-                    this.inputController.mouse.clientX,
-                    this.inputController.mouse.clientY);
-                e.preventDefault();
+    public resolveMouseEvent(mouse) {
+        if (mouse.isDown && this.inputController.getKey("Control")) {
+            if (!this.dragInfo.dragging) {
+                this.dragInfo.startDrag(this.transform, mouse.x, mouse.y);
             }
-        });
-
-        this.inputController.subscribe("mousemove", (e: MouseEvent) => {
-            if (this.dragInfo.dragging && this.inputController.getKey("Control")) {
-                const mouse = this.inputController.mouse;
-
-                let transform = createMatrix();
-                transform = transform.scaleNonUniform(this.zoom, this.zoom)
-                    .translate(this.transform.x, this.transform.y);
-
-                const pos = {
-                    x: this.dragInfo.dragPosition.x - mouse.x,
-                    y: this.dragInfo.dragPosition.y - mouse.y,
-                };
-
-                this.transform.x = this.dragInfo.objectPosition.x + pos.x;
-                this.transform.y = this.dragInfo.objectPosition.y + pos.y;
+        } else {
+            if (this.dragInfo.dragging) {
+                this.dragInfo.stopDrag();
             }
-        });
+        }
+
+        if (this.dragInfo.dragging && this.inputController.getKey("Control")) {
+            let transform = createMatrix();
+            transform = transform.scaleNonUniform(this.zoom, this.zoom)
+                .translate(this.transform.x, this.transform.y);
+
+            const pos = {
+                x: this.dragInfo.dragPosition.x - mouse.x,
+                y: this.dragInfo.dragPosition.y - mouse.y,
+            };
+
+            this.transform.x = this.dragInfo.objectPosition.x + pos.x;
+            this.transform.y = this.dragInfo.objectPosition.y + pos.y;
+        }
     }
 
     public resize(width: number, height: number) {
@@ -73,19 +70,6 @@ export default class Camera {
         this.zoom = zoomLevel;
     }
 
-    public performDrag() {
-        const mouse = this.inputController.mouse;
-        if (mouse.isDown && this.inputController.getKey("Control")) {
-            if (!this.dragInfo.dragging) {
-                this.dragInfo.startDrag(this.transform, mouse.x, mouse.y);
-            }
-        } else {
-            if (this.dragInfo.dragging) {
-                this.dragInfo.stopDrag();
-            }
-        }
-    }
-
     public shake() {
         //
     }
@@ -95,7 +79,6 @@ export default class Camera {
         ctx.scale(this.zoom, this.zoom);
         ctx._scale = this.zoom;
         ctx.translate(-this.transform.x, -this.transform.y);
-        this.performDrag();
     }
 }
 

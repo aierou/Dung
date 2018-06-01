@@ -2,7 +2,6 @@ import Game from "./engine/Game";
 import InputController from "./engine/InputController";
 import World from "./engine/world/World"; // I don't know if this should be created from the index object.
 
-let world: World;
 let game: Game;
 let canvas: HTMLCanvasElement;
 let ctx: CanvasRenderingContext2D;
@@ -16,8 +15,6 @@ window.onload = function() {
 
     inputController.init(canvas, ctx);
     game = new Game(ctx);
-    world = new World(game);
-    game.addWorld(world);
 
     (window as any).game = game;
 
@@ -28,6 +25,7 @@ window.onload = function() {
 const onresize = function() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    ctx.imageSmoothingEnabled = false;
     if (game) { game.resize(canvas.width, canvas.height); }
 };
 
@@ -115,7 +113,8 @@ const enhanceContext = function(context) {
         // and this is _not_ a shim.
         resetTransform() {
             this._matrix = createMatrix();
-            super_.resetTransform.call(this);
+            this._setMatrix();
+            // super_.resetTransform.call(this); // Pretty sure this isn't implemented in Android
         },
 
         __proto__: super_,

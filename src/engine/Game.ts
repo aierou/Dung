@@ -1,6 +1,12 @@
 import Camera from "./Camera";
 import Rectangle from "./common/Rectangle";
+import WorldEditorInfo from "./common/WorldEditorInfo";
+import Constants from "./Constants";
+import InputController from "./InputController";
+import TilePalette from "./ui/TilePalette";
 import UILabel from "./ui/UILabel";
+import WorldContainer from "./ui/WorldContainer";
+import WorldElement from "./ui/WorldElement";
 import UIManager from "./UIManager";
 import World from "./world/World";
 
@@ -11,24 +17,22 @@ export default class Game {
     public fps: string;
     private lastRender: number;
     private lastTick: number;
-    private worlds: World[];
     private ctx: CanvasRenderingContext2D;
     private uiManager: UIManager;
     private fpsLabel: UILabel;
-    private camera: Camera;
-    private bounds: Rectangle;
+    private worldContainer: WorldContainer;
 
     constructor(ctx: CanvasRenderingContext2D) {
         this.ctx = ctx;
-        this.worlds = [];
+
+        const mainWorld = new World();
+        this.worldContainer = new WorldContainer(this.ctx, mainWorld);
 
         // UI Stuff
         this.uiManager = new UIManager();
         this.fpsLabel = new UILabel(this.fps);
         this.fpsLabel.outline = true;
         this.uiManager.addUIElement(this.fpsLabel);
-
-        this.camera = new Camera();
     }
 
     public init() {
@@ -41,16 +45,7 @@ export default class Game {
     }
 
     public resize(width, height) {
-        const scale = transformPoint({x: width, y: height}, (this.ctx as any).getTransform().inverse());
-        this.camera.resize(scale.x, scale.y);
-    }
-
-    public getActiveCamera(): Camera {
-        return this.camera;
-    }
-
-    public addWorld(world: World) {
-        this.worlds.push(world);
+        this.worldContainer.resize(width, height);
     }
 
     private render(tFrame) {
@@ -58,7 +53,7 @@ export default class Game {
 
         // Clear screen
         this.ctx.save();
-        this.ctx.fillStyle = "#ffffff";
+        this.ctx.fillStyle = Constants.backgroundColor;
         const inverseMatrix = (this.ctx as any).getTransform().inverse();
         const position = transformPoint({x: 0, y: 0}, inverseMatrix);
         const scale = transformPoint({x: this.ctx.canvas.width, y: this.ctx.canvas.height}, inverseMatrix);
@@ -68,25 +63,14 @@ export default class Game {
 
         this.fps = (1000 / (tFrame - this.lastRender)).toPrecision(5);
 
-        this.camera.resize(bounds.width, bounds.height);
-        this.camera.render(this.ctx);
-
-         // Not sure why I'm supporting multiple worlds if they all have the same context
-        this.worlds.forEach((world) => {
-            world.render(this.ctx, delta);
-        });
+        this.worldContainer.render(this.ctx, delta);
 
         this.fpsLabel.text = this.fps + " fps";
-        this.uiManager.render(this.ctx);
-
-        // this.ctx.fillStyle = "#fffffffa";
-        // this.ctx.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+        this.uiManager.render(this.ctx, new Rectangle(0, 0, this.ctx.canvas.width, this.ctx.canvas.height));
     }
 
     private update(timestamp) {
-        this.worlds.forEach((world) => {
-            world.update(timestamp);
-        });
+        this.worldContainer.update(timestamp);
     }
 
     private main(tFrame) {
