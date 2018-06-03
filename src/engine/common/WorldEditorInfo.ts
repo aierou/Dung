@@ -6,6 +6,7 @@ export default class WorldEditorInfo {
     public backgroundColor: string = "#333333";
     public world: World;
     public tileSize: number = 128;
+    public editing: boolean = true;
     private camera: Camera;
 
     constructor(world: World, camera: Camera) {

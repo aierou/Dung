@@ -1,4 +1,5 @@
 import Camera from "./Camera";
+import PinchInfo from "./common/PinchInfo";
 import Point from "./common/Point";
 import InputController from "./InputController";
 import UIElement from "./ui/UIElement";
@@ -21,15 +22,20 @@ export default class UIManager {
     public render(ctx, screenRect) {
         ctx.save();
         ctx.resetTransform();
-        this.elements.forEach((element) => {
-            element.render(ctx, screenRect);
-        });
+
+        // Index relates to depth, so reverse iterate to draw highest depth first
+        for (let i = this.elements.length - 1; i >= 0; i--) {
+            const element = this.elements[i];
+            if (element.enabled) {
+                element.render(ctx, screenRect);
+            }
+        }
         ctx.restore();
     }
 
     public getElementAtPosition(x: number, y: number) {
         for (const element of this.elements) {
-            if (element.getBoundingRectangle().containsPoint(new Point(x, y))) {
+            if (element.enabled && element.getBoundingRectangle().containsPoint(new Point(x, y))) {
                 return element;
             }
         }
@@ -53,5 +59,10 @@ export default class UIManager {
     public resolveMouseEvent(mouse) {
         const element = this.activeElement || this.getElementAtPosition(mouse.clientX, mouse.clientY);
         if (element) { element.resolveMouseEvent(mouse); }
+    }
+
+    public resolvePinchEvent(pinch: PinchInfo) {
+        const element = this.getElementAtPosition(pinch.startPosition.x, pinch.startPosition.y);
+        if (element) { element.resolvePinchEvent(pinch); }
     }
 }

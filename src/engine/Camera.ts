@@ -1,4 +1,6 @@
 import DragInfo from "./common/DragInfo";
+import Matrix from "./common/Matrix";
+import Point from "./common/Point";
 import Rectangle from "./common/Rectangle";
 import Transform from "./common/Transform";
 import InputController from "./InputController";
@@ -15,9 +17,12 @@ export default class Camera {
     private height: number;
 
     public resolveMouseEvent(mouse) {
-        if (mouse.isDown && this.inputController.getKey("Control")) {
+        if (mouse.isDown) {
             if (!this.dragInfo.dragging) {
-                this.dragInfo.startDrag(this.transform, mouse.x, mouse.y);
+                if (this.transform.x !== 0 && this.transform.y !== 0) {
+
+                    this.dragInfo.startDrag(this.transform, mouse.x, mouse.y);
+                }
             }
         } else {
             if (this.dragInfo.dragging) {
@@ -25,11 +30,7 @@ export default class Camera {
             }
         }
 
-        if (this.dragInfo.dragging && this.inputController.getKey("Control")) {
-            let transform = createMatrix();
-            transform = transform.scaleNonUniform(this.zoom, this.zoom)
-                .translate(this.transform.x, this.transform.y);
-
+        if (this.dragInfo.dragging) {
             const pos = {
                 x: this.dragInfo.dragPosition.x - mouse.x,
                 y: this.dragInfo.dragPosition.y - mouse.y,
@@ -53,17 +54,19 @@ export default class Camera {
         return new Rectangle(this.transform.x, this.transform.y, this.width, this.height);
     }
 
+    public getRenderMatrix() {
+        return new Matrix().scaleNonUniform(this.zoom, this.zoom).translate(-this.transform.x, -this.transform.y);
+    }
+
     public zoomToPoint(zoomLevel: number, x: number, y: number) {
         zoomLevel = Math.min(Math.max(zoomLevel, this.MINIMUM_SCALE), this.MAXIMUM_SCALE);
         // Point before zoom
-        let transform = createMatrix();
-        transform = transform.scaleNonUniform(this.zoom, this.zoom).translate(this.transform.x, this.transform.y);
-        const pos1 = transformPoint({x, y}, transform.inverse());
+        const pos1 = new Point(x, y).applyMatrixTransform(this.getRenderMatrix().inverse());
 
         // Point after zoom
-        transform = createMatrix();
-        transform = transform.scaleNonUniform(zoomLevel, zoomLevel).translate(this.transform.x, this.transform.y);
-        const pos2 = transformPoint({x, y}, transform.inverse());
+        let transform = new Matrix();
+        transform = transform.scaleNonUniform(zoomLevel, zoomLevel).translate(-this.transform.x, -this.transform.y);
+        const pos2 = new Point(x, y).applyMatrixTransform(transform.inverse());
 
         this.transform.x -= pos2.x - pos1.x;
         this.transform.y -= pos2.y - pos1.y;
@@ -81,12 +84,3 @@ export default class Camera {
         ctx.translate(-this.transform.x, -this.transform.y);
     }
 }
-
-function transformPoint(point, matrix) {
-    return { x: (point.x * matrix.a) + (point.y * matrix.c) + matrix.e,
-            y: (point.x * matrix.b) + (point.y * matrix.d) + matrix.f };
-}
-const createMatrix = function() {
-    const svgNamespace = "http://www.w3.org/2000/svg";
-    return document.createElementNS(svgNamespace, "g").getCTM();
-};

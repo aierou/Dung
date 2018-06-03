@@ -9,6 +9,10 @@ const inputController: InputController = InputController.Instance;
 
 
 window.onload = function() {
+    // Special stuff
+    document.addEventListener("touchmove", (e) => { e.preventDefault(); }, { passive: false });
+
+    // Initializing game
     canvas = document.getElementById("canvas") as HTMLCanvasElement;
     ctx = enhanceContext(canvas.getContext("2d"));
     window.onresize = onresize;

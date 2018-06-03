@@ -9,13 +9,14 @@ import EntityManager from "./EntityManager";
 export default class World {
     public entityManager: EntityManager;
     private loadedChunks: Chunk[] = new Array();
+    // Can't key with Point object because Map.get doesn't compare properties
     private chunks: Map<string, Chunk>;
     // Expect these to come in as metadata
     private tileSize: number = 128;
     private scaledTileSize: number;
     private visibleArea: Rectangle;
 
-    private get chunkSize() {
+    public get chunkSize() {
         return 2048 / this.tileSize; // 2048 - max image size before slowdowns
     }
 
@@ -58,17 +59,6 @@ export default class World {
             }
         }
 
-        // Debug
-        for (const chunk of this.loadedChunks) {
-            ctx.fillStyle = ((chunk.position.x + chunk.position.y) % 2 === 0) ? "#66666666" : "#88888866";
-            const rect = chunk.getBoundingRectangle();
-            ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
-            const p = new Point(rect.x / (this.chunkSize * this.tileSize), rect.y / (this.chunkSize * this.tileSize));
-            ctx.fillStyle = "#ffffffaa";
-            ctx.font = "bold 500px sans-serif";
-            ctx.fillText(p.x + ", " + p.y, rect.x + (rect.width / 3), rect.y + (rect.height / 2));
-        }
-
         // Render entities
         this.entityManager.render(ctx, delta);
     }
@@ -76,6 +66,10 @@ export default class World {
     public getChunkAtPosition(x: number, y: number): Chunk {
         const size = this.tileSize * this.chunkSize;
         return this.chunks.get(new Point(Math.floor(x / size), Math.floor(y / size)).toString());
+    }
+
+    public getLoadedChunks(): Chunk[] {
+        return this.loadedChunks;
     }
 
     private loadChunk(chunk: Chunk, safe: boolean = true) {
@@ -109,33 +103,16 @@ export default class World {
             validChunks.push(chunk);
         }
 
-        const chunksToUnload = this.loadedChunks.filter((n) => {
-            return validChunks.indexOf(n) === -1;
-        });
-
-        const chunksToLoad = validChunks.filter((n) => {
-            return this.loadedChunks.indexOf(n) === -1;
-        });
-
-        // unload
-        for (const chunk of chunksToUnload) {
-            this.unloadChunk(chunk, false);
+        for (let i = this.loadedChunks.length - 1; i >= 0; i--) {
+            if (validChunks.indexOf(this.loadedChunks[i]) === -1) {
+                this.unloadChunk(this.loadedChunks[i], false);
+            }
         }
-        if (chunksToUnload.length > 0) {console.log("Unloading " + chunksToUnload.length + " chunks"); }
 
-        // load
-        for (const chunk of chunksToLoad) {
-            this.loadChunk(chunk, false);
+        for (const chunk of validChunks) {
+            if (this.loadedChunks.indexOf(chunk) === -1) {
+                this.loadChunk(chunk, false);
+            }
         }
-        if (chunksToLoad.length > 0) {console.log("Loading " + chunksToLoad.length + " chunks"); }
     }
 }
-
-function transformPoint(point, matrix) {
-    return { x: (point.x * matrix.a) + (point.y * matrix.c) + matrix.e,
-            y: (point.x * matrix.b) + (point.y * matrix.d) + matrix.f };
-}
-const createMatrix = function() {
-    const svgNamespace = "http://www.w3.org/2000/svg";
-    return document.createElementNS(svgNamespace, "g").getCTM();
-};

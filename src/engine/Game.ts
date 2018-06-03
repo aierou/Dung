@@ -1,4 +1,5 @@
 import Camera from "./Camera";
+import Point from "./common/Point";
 import Rectangle from "./common/Rectangle";
 import WorldEditorInfo from "./common/WorldEditorInfo";
 import Constants from "./Constants";
@@ -6,7 +7,7 @@ import InputController from "./InputController";
 import TilePalette from "./ui/TilePalette";
 import UILabel from "./ui/UILabel";
 import WorldContainer from "./ui/WorldContainer";
-import WorldElement from "./ui/WorldElement";
+import WorldUIElement from "./ui/WorldUIElement";
 import UIManager from "./UIManager";
 import World from "./world/World";
 
@@ -55,8 +56,8 @@ export default class Game {
         this.ctx.save();
         this.ctx.fillStyle = Constants.backgroundColor;
         const inverseMatrix = (this.ctx as any).getTransform().inverse();
-        const position = transformPoint({x: 0, y: 0}, inverseMatrix);
-        const scale = transformPoint({x: this.ctx.canvas.width, y: this.ctx.canvas.height}, inverseMatrix);
+        const position = new Point(0, 0).applyMatrixTransform(inverseMatrix);
+        const scale = new Point(this.ctx.canvas.width, this.ctx.canvas.height).applyMatrixTransform(inverseMatrix);
         const bounds = new Rectangle(position.x, position.y, scale.x - position.x, scale.y - position.y);
         this.ctx.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
         this.ctx.restore();
@@ -100,9 +101,4 @@ export default class Game {
               this.update(this.lastTick);
         }
     }
-}
-
-function transformPoint(point, matrix) {
-    return { x: (point.x * matrix.a) + (point.y * matrix.c) + matrix.e,
-            y: (point.x * matrix.b) + (point.y * matrix.d) + matrix.f };
 }

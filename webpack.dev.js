@@ -8,7 +8,9 @@ module.exports = {
     contentBase: './public',
     port: 1234,
     open: false,
-    hot: false
+    hot: false,
+    host: '0.0.0.0',
+    disableHostCheck: true,
   },
   module: {
         rules: [

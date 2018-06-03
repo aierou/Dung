@@ -4,11 +4,12 @@ import InputController from "../InputController";
 
 export default class UIElement extends Drawable {
     public depth: number = 0;
+    public enabled: boolean = true;
     protected width: number;
     protected height: number;
     protected inputController: InputController = InputController.Instance;
 
-    constructor(x: number, y: number) {
+    constructor(x: number = 0, y: number = 0) {
         super(x, y);
     }
 
@@ -20,4 +21,5 @@ export default class UIElement extends Drawable {
 
     public resolveMouseEvent(mouse) { /**/ }
     public resolveWheelEvent(wheel, mouse) { /**/ }
+    public resolvePinchEvent(pinch) { /**/ }
 }
